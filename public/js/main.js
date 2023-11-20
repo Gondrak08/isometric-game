@@ -96,7 +96,7 @@ let tileBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 //Floor Generator//
 //////////////////
 // uncomment code bellow to generate floor based on pixel tiles;
-const dungeonFloor = dungeonTiles;
+const dungeonFloor = dungeonFloorTwo;
 
 for (let x = 0; x < gridSize; x++) {
   for (let z = 0; z < gridSize; z++) {
@@ -195,8 +195,6 @@ window.addEventListener("gamepaddisconnected", null);
 //
 function playerMovment() {
   const playerSpeed = 0.15; // player speed;
-  let targetX = cube.position.x; // player x aim axis position
-  let targetZ = cube.position.z; // player y aim axis position
 
   const cameraGroup = new THREE.Group();
   cameraGroup.add(camera);
@@ -207,14 +205,21 @@ function playerMovment() {
     const newZ = cube.position.z + deltaZ * tileSize;
 
     // Check if the new position is within the grid and on a walkable tile
-    const newIndex =
-      Math.floor((newX + (gridSize / 2) * tileSize) / tileSize) * gridSize +
-      Math.floor((newZ + (gridSize / 2) * tileSize) / tileSize);
+    // const newIndex =
+    //   Math.floor((newX + (gridSize / 2) * tileSize) / tileSize) * gridSize +
+    //   Math.floor((newZ + (gridSize / 2) * tileSize) / tileSize);
+
+    // Calculate the index of the new position in the grid
+    const newIndexX = Math.floor((newX + (gridSize / 2) * tileSize) / tileSize);
+    const newIndexZ = Math.floor((newZ + (gridSize / 2) * tileSize) / tileSize);
+    const newIndex = newIndexX * gridSize + newIndexZ;
 
     const isValidMove =
-      newIndex >= 0 &&
-      newIndex < dungeonTiles.length &&
-      dungeonTiles[newIndex] === 1;
+      newIndexX >= 0 &&
+      newIndexX < gridSize &&
+      newIndexZ >= 0 &&
+      newIndexZ < gridSize &&
+      dungeonFloor[newIndex] === 1;
 
     if (isValidMove) {
       cube.position.x = newX;
@@ -239,16 +244,6 @@ function playerMovment() {
       movePlayer(deltaMove, 0);
       // targetX += tileSize;
     }
-    //oldway to cast a limit line around the grid
-    // targetX = Math.max(
-    //   (-gridSize / 2) * tileSize,
-    //   Math.min((gridSize / 2) * tileSize, targetX),
-    // );
-    // targetZ = Math.max(
-    //   (-gridSize / 2) * tileSize,
-    //   Math.min((gridSize / 2) * tileSize, targetZ),
-    // );
-    //
     // Update player position smootlhy...
     // cube.position.x += (targetX - cube.position.x) * playerSpeed;
     // cube.position.z += (targetZ - cube.position.z) * playerSpeed;
