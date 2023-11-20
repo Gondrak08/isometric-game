@@ -1,12 +1,12 @@
 ///////////////////////
 // Global Variables //
 /////////////////////
-
+// window.innerWidth / window.innerHeight,
 // Scene Related
 const fieldWidth = 10;
 const fieldHeight = 10;
-const width = 1960;
-const height = 800;
+const width = window.innerWidth;
+const height = window.innerHeight;
 const aspect = width / height;
 const D = 5;
 
@@ -192,69 +192,92 @@ window.addEventListener("keyup", function (e) {
 // gamepad
 window.addEventListener("gamepadconnected", null);
 window.addEventListener("gamepaddisconnected", null);
+
+
+
+//////////////////////////
+///Player Movment Setup//
+////////////////////////
 //
 function playerMovment() {
   const playerSpeed = 0.15; // player speed;
-
   const cameraGroup = new THREE.Group();
   cameraGroup.add(camera);
   scene.add(cameraGroup);
 
   function movePlayer(deltaX, deltaZ) {
-    const newX = cube.position.x + deltaX * tileSize;
-    const newZ = cube.position.z + deltaZ * tileSize;
+   return new Promise((resolve) => {
+      const newX = cube.position.x + deltaX * tileSize;
+      const newZ = cube.position.z + deltaZ * tileSize;
 
-    // Check if the new position is within the grid and on a walkable tile
-    // const newIndex =
-    //   Math.floor((newX + (gridSize / 2) * tileSize) / tileSize) * gridSize +
-    //   Math.floor((newZ + (gridSize / 2) * tileSize) / tileSize);
+      // Calculate the target position based on the movement direction
+      const targetX =
+        newX + (deltaX > 0 ? tileSize : deltaX < 0 ? -tileSize : 0);
+      const targetZ =
+        newZ + (deltaZ > 0 ? tileSize : deltaZ < 0 ? -tileSize : 0);
 
-    // Calculate the index of the new position in the grid
-    const newIndexX = Math.floor((newX + (gridSize / 2) * tileSize) / tileSize);
-    const newIndexZ = Math.floor((newZ + (gridSize / 2) * tileSize) / tileSize);
-    const newIndex = newIndexX * gridSize + newIndexZ;
+      // Check if the new position is within the grid and on a walkable tile
+      const newIndexX = Math.floor(
+        (targetX + (gridSize / 2) * tileSize) / tileSize
+      );
+      const newIndexZ = Math.floor(
+        (targetZ + (gridSize / 2) * tileSize) / tileSize
+      );
+      const newIndex = newIndexX * gridSize + newIndexZ;
 
-    const isValidMove =
-      newIndexX >= 0 &&
-      newIndexX < gridSize &&
-      newIndexZ >= 0 &&
-      newIndexZ < gridSize &&
-      dungeonFloor[newIndex] === 1;
+      const isValidMove =
+        newIndexX >= 0 &&
+        newIndexX < gridSize &&
+        newIndexZ >= 0 &&
+        newIndexZ < gridSize &&
+        dungeonFloor[newIndex] === 1;
 
-    if (isValidMove) {
-      cube.position.x = newX;
-      cube.position.z = newZ;
-    }
+      if (isValidMove) {
+        // Move smoothly to the target position using a tween or other method
+        // For simplicity, using setTimeout here as a placeholder
+        setTimeout(() => {
+          cube.position.x = targetX;
+          cube.position.z = targetZ;
+          resolve(); // Resolve the promise once the movement is complete
+        }, 200); // Adjust the duration as needed
+      } else {
+        resolve(); // Resolve immediately if the move is not valid
+      }
+    }); 
   }
 
   if (keys.up || keys.down || keys.left || keys.right) {
-    let deltaMove = playerSpeed * tileSize;
+  let deltaMove = playerSpeed * tileSize;
+    let movePromise = Promise.resolve(); // Initial resolved promise
+
     if (keys.up && !keys.down) {
-      movePlayer(0, -deltaMove);
-      // targetZ -= tileSize;
+      movePromise = movePlayer(0, -deltaMove);
     } else if (keys.down && !keys.up) {
-      movePlayer(0, deltaMove);
-      // targetZ += tileSize;
+      movePromise = movePlayer(0, deltaMove);
     }
 
     if (keys.left && !keys.right) {
-      movePlayer(-deltaMove, 0);
-      // targetX -= tileSize;
+      movePromise = movePlayer(-deltaMove, 0);
     } else if (keys.right && !keys.left) {
-      movePlayer(deltaMove, 0);
-      // targetX += tileSize;
+      movePromise = movePlayer(deltaMove, 0);
     }
-    // Update player position smootlhy...
-    // cube.position.x += (targetX - cube.position.x) * playerSpeed;
-    // cube.position.z += (targetZ - cube.position.z) * playerSpeed;
-    //
-    // update and centralize camera position...
-    cameraGroup.position.x = cube.position.x;
-    cameraGroup.position.z = cube.position.z;
+
+    // Update and centralize camera position after all movements are complete
+    movePromise.then(() => {
+      cameraGroup.position.x = cube.position.x;
+      cameraGroup.position.z = cube.position.z;
+    }); 
   } else if (!keys.up && !keys.down && !keys.left && !keys.right) {
-    // Centralize the cube in the tile floor;
-    cube.position.x = Math.floor(cube.position.x) + 0.3;
-    cube.position.z = Math.floor(cube.position.z) + 0.3;
+    // Snap to the center of the current tile when no keys are pressed
+    const currentTileX = Math.round(cube.position.x / tileSize) + 0.3;
+    const currentTileZ = Math.round(cube.position.z / tileSize) + 0.3;
+    cube.position.x = currentTileX;
+    cube.position.z = currentTileZ;
+
+    // // Centralize the cube in the tile floor;
+    // cube.position.x = Math.floor(cube.position.x) + 0.3;
+    // cube.position.z = Math.floor(cube.position.z) + 0.3;
+    //
     // Centralize the camera into the player;
     cameraGroup.position.x = cube.position.x;
     cameraGroup.position.z = cube.position.z;
