@@ -263,10 +263,8 @@ function playerMovment() {
     }
 
     // Update and centralize camera position after all movements are complete
-    movePromise.then(() => {
       cameraGroup.position.x = cube.position.x;
       cameraGroup.position.z = cube.position.z;
-    }); 
   } else if (!keys.up && !keys.down && !keys.left && !keys.right) {
     // Snap to the center of the current tile when no keys are pressed
     const currentTileX = Math.round(cube.position.x / tileSize) + 0.3;
