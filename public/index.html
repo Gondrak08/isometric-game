@@ -28,15 +28,17 @@
     <script src="https://unpkg.com/three@0.124.0/examples/js/controls/OrbitControls.js"></script>
     <script src="js/dungeonsMap/dungeons.js"></script>
     <script src="js/data/collisions.js"></script>
+    <script src="js/geometryObjects/box.js"></script>
+    <script src="js/player/player.js"></script>
     <script src="js/main.js"></script>
     <script type="text/javascript">
-      const ws = new WebSocket("ws://localhost:3000");
-
-      ws.onmessage = (event) => {
-        if (event.data === "reload") {
-          location.reload();
-        }
-      };
+      <!-- const ws = new WebSocket("ws://localhost:3000"); -->
+      <!---->
+      <!-- ws.onmessage = (event) => { -->
+      <!--   if (event.data === "reload") { -->
+      <!--     location.reload(); -->
+      <!--   } -->
+      <!-- }; -->
     </script>
   </body>
 </html>
